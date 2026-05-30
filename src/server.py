@@ -1,5 +1,6 @@
 import os
 
+from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
@@ -11,6 +12,12 @@ from src.tools import web_fetch, web_search
 def get_mcp_server() -> FastMCP:
     """Create and configure the MCP server with all tools."""
     mcp = FastMCP("WebTools", host=os.getenv("HOST", "0.0.0.0"), port=int(os.getenv("PORT", "8642")))
+    mcp._mcp_app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     @mcp.custom_route("/", methods=["GET"])
     async def health_check(request: Request) -> JSONResponse:
