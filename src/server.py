@@ -11,7 +11,11 @@ from src.tools import web_fetch, web_search
 
 def get_mcp_server() -> FastMCP:
     """Create and configure the MCP server with all tools."""
-    mcp = FastMCP("WebTools", host=os.getenv("HOST", "0.0.0.0"), port=int(os.getenv("PORT", "8642")), streamable_http_path="/sse")
+    mcp = FastMCP(
+        "WebTools",
+        host=os.getenv("HOST", "0.0.0.0"),
+        port=int(os.getenv("PORT", "8642")),
+    )
     for app in (mcp.sse_app(), mcp.streamable_http_app()):
         app.add_middleware(
             CORSMiddleware,
