@@ -6,7 +6,7 @@ from starlette.responses import JSONResponse
 
 from mcp.server.fastmcp import FastMCP
 
-from src.tools import web_fetch, web_search
+from src.tools import web_fetch, web_search, research
 
 
 def get_mcp_server() -> FastMCP:
@@ -47,6 +47,28 @@ def get_mcp_server() -> FastMCP:
             max_length: Maximum characters of markdown output to return. Default -1 means no limit.
         """
         return await web_fetch.fetch(url, max_length=max_length)
+
+    @mcp.tool()
+    async def research_tool(
+        query: str,
+        max_search_results: int = 15,
+        max_papers: int = 3,
+        max_chunks: int = 15,
+    ) -> dict:
+        """Research ArXiv papers: search arxiv.org, fetch paper HTML, chunk content, and return the most relevant chunks ranked by BM25.
+
+        Args:
+            query: The research query.
+            max_search_results: Number of ArXiv search results to consider (default 15).
+            max_papers: Number of papers to fetch and analyze (default 3).
+            max_chunks: Number of top relevant chunks to return (default 15).
+        """
+        return await research.research(
+            query,
+            max_search_results=max_search_results,
+            max_papers=max_papers,
+            max_chunks=max_chunks,
+        )
 
     return mcp
 
