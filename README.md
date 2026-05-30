@@ -32,21 +32,45 @@ Returns `{content, title, url, content_type}`.
 # Install dependencies
 uv sync
 
-# Run the server (streamable HTTP on port 8000)
+# Run the server (SSE on port 8642, default)
 uv run python -m src.server
+
+# Run with streamable HTTP transport
+TRANSPORT=streamable-http uv run python -m src.server
+```
+
+### Environment Variables
+
+| Variable | Default | Description |
+|---|---|---|
+| `HOST` | `0.0.0.0` | Server bind address |
+| `PORT` | `8642` | Server port |
+| `TRANSPORT` | `sse` | Transport protocol: `sse` or `streamable-http` |
+
+### Health Check
+
+A health check endpoint is available at the root path:
+
+```bash
+curl http://localhost:8642/
+# {"status": "ok"}
 ```
 
 ## Connect via Claude Code
 
 ```bash
-claude mcp add --transport http web-tools http://localhost:8000/mcp
+# SSE (default)
+claude mcp add web-tools http://localhost:8642/sse
+
+# Streamable HTTP
+claude mcp add --transport http web-tools http://localhost:8642/mcp
 ```
 
 ## Connect via MCP Inspector
 
 ```bash
 npx -y @modelcontextprotocol/inspector
-# Connect to http://localhost:8000/mcp in the UI
+# Connect to http://localhost:8642/sse (SSE) or http://localhost:8642/mcp (streamable HTTP) in the UI
 ```
 
 ## Project Structure

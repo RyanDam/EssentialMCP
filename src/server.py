@@ -1,5 +1,8 @@
 import os
 
+from starlette.requests import Request
+from starlette.responses import JSONResponse
+
 from mcp.server.fastmcp import FastMCP
 
 from src.tools import web_fetch, web_search
@@ -8,6 +11,10 @@ from src.tools import web_fetch, web_search
 def get_mcp_server() -> FastMCP:
     """Create and configure the MCP server with all tools."""
     mcp = FastMCP("WebTools", host=os.getenv("HOST", "0.0.0.0"), port=int(os.getenv("PORT", "8642")))
+
+    @mcp.custom_route("/", methods=["GET"])
+    async def health_check(request: Request) -> JSONResponse:
+        return JSONResponse({"status": "ok"})
 
     @mcp.tool()
     async def web_search_tool(query: str, max_results: int = 10) -> list[dict]:
@@ -34,7 +41,8 @@ def get_mcp_server() -> FastMCP:
 
 def main():
     mcp = get_mcp_server()
-    mcp.run(transport="streamable-http")
+    transport = os.getenv("TRANSPORT", "sse")
+    mcp.run(transport=transport)
 
 
 if __name__ == "__main__":

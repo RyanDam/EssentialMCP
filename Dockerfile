@@ -19,6 +19,7 @@ COPY src/ src/
 RUN uv sync --frozen --no-dev
 
 ENV PYTHONUNBUFFERED=1
+ENV TRANSPORT=sse
 
 EXPOSE 8642
 
