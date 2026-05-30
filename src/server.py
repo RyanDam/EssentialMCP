@@ -70,6 +70,49 @@ def get_mcp_server() -> FastMCP:
             max_chunks=max_chunks,
         )
 
+    @mcp.prompt()
+    def deep_research(query: str) -> list[dict]:
+        """System prompt for iterative deep research using web_search, web_fetch, and research tools.
+
+        Use this as the system prompt when you want an LLM agent to conduct multi-round, gap-driven investigation.
+
+        Args:
+            query: The research topic or question.
+        """
+        return [
+            {
+                "role": "user",
+                "content": (
+                    f"You are an expert research assistant conducting deep, iterative investigation on: {query}\n\n"
+                    "Your goal is to produce comprehensive, well-cited analysis through systematic multi-round research.\n\n"
+                    "## Research Protocol\n\n"
+                    "Follow this iterative deep-search process:\n\n"
+                    "### Phase 1: Initial Search\n"
+                    "Use `web_search` to find broadly relevant results. If the topic is technical or academic, also call `research` to get ArXiv papers.\n\n"
+                    "### Phase 2: Deep Dive\n"
+                    "For the most promising URLs, use `web_fetch` to retrieve full content. Fetch multiple sources in parallel when possible.\n\n"
+                    "### Phase 3: Analysis\n"
+                    "Synthesize findings into key insights, patterns, and claims. Always cite sources inline using markdown links: `claim [source](url)`.\n\n"
+                    "### Phase 4: Gap Identification\n"
+                    "Identify what remains unanswered. Generate new sub-queries targeting those gaps. Repeat Phases 1-3 until you've reached sufficient depth (at least 2-3 iterations).\n\n"
+                    "### Phase 5: Final Synthesis\n"
+                    "Produce a comprehensive report covering:\n"
+                    "- Direct answer to the original query\n"
+                    "- Key findings organized by theme\n"
+                    "- Supporting evidence with citations\n"
+                    "- Identified gaps or areas needing further research\n"
+                    "- Conflicting perspectives, if any\n\n"
+                    "## Guidelines\n\n"
+                    "- Be thorough and objective — explore multiple angles and perspectives\n"
+                    "- Always ground claims in fetched source material; never fabricate citations\n"
+                    "- Prioritize quality over quantity: a few well-analyzed sources beat many skimmed ones\n"
+                    "- Track what you've already covered to avoid redundant searches in later iterations\n"
+                    "- If a URL fails to fetch, move on to the next source\n"
+                    "- Use parallel tool calls when independent (e.g., fetching multiple URLs at once)"
+                ),
+            }
+        ]
+
     return mcp
 
 

@@ -1,6 +1,6 @@
 # web-mcp-server
 
-MCP server that exposes `web_search` and `web_fetch` tools, allowing LLM applications to search the web and fetch page content.
+MCP server that exposes `web_search`, `web_fetch`, and `research` tools, allowing LLM applications to search the web, fetch page content, and research ArXiv papers.
 
 ## Tools
 
@@ -25,6 +25,25 @@ Fetch a URL and return cleaned markdown content.
 | `max_length` | `int` | `-1` | Max characters of markdown output to return. `-1` means no limit (full content). |
 
 Returns `{content, title, url, content_type}`.
+
+### `research`
+
+Search ArXiv papers, fetch HTML content, chunk, and return the most relevant chunks ranked by BM25.
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `query` | `str` | — | Research query |
+| `max_search_results` | `int` | `15` | Number of ArXiv search results to consider |
+| `max_papers` | `int` | `3` | Number of papers to fetch and analyze |
+| `max_chunks` | `int` | `15` | Number of top relevant chunks to return |
+
+Returns `{query, sources, chunks, total_chunks_analyzed}`.
+
+## Deep Research Prompt
+
+The server exposes a `deep_research` prompt via the MCP protocol. Clients can discover and call it with a query parameter to get a system prompt for iterative deep research.
+
+**Usage:** Call `deep_research(query="...")` to get a prompt that guides an LLM agent to orchestrate `web_search`, `web_fetch`, and `research` in multi-round investigation following the CoSearch deep search pattern.
 
 ## Quickstart
 
@@ -77,10 +96,11 @@ npx -y @modelcontextprotocol/inspector
 
 ```
 src/
-├── server.py            # MCP server setup + tool registration
+├── server.py            # MCP server setup + tool/prompt registration
 ├── tools/
 │   ├── web_search.py    # DuckDuckGo search logic
-│   └── web_fetch.py     # URL fetch, HTML cleaning, markdown conversion
+│   ├── web_fetch.py     # URL fetch, HTML cleaning, markdown conversion
+│   └── research.py      # ArXiv paper search, fetch, chunk, BM25 ranking
 └── utils/
     └── html.py          # HTML title extraction
 ```
@@ -99,3 +119,5 @@ src/
 | `httpx` | Async HTTP client |
 | `beautifulsoup4` | HTML parsing and cleaning |
 | `markdownify` | HTML-to-markdown conversion |
+| `rank-bm25` | BM25 document ranking |
+| `nltk` | Text tokenization |
