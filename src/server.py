@@ -1,3 +1,5 @@
+import os
+
 from mcp.server.fastmcp import FastMCP
 
 from src.tools import web_fetch, web_search
@@ -5,7 +7,7 @@ from src.tools import web_fetch, web_search
 
 def get_mcp_server() -> FastMCP:
     """Create and configure the MCP server with all tools."""
-    mcp = FastMCP("WebTools")
+    mcp = FastMCP("WebTools", host=os.getenv("HOST", "0.0.0.0"), port=int(os.getenv("PORT", "8642")))
 
     @mcp.tool()
     async def web_search_tool(query: str, max_results: int = 10) -> list[dict]:
