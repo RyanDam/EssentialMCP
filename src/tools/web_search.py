@@ -1,8 +1,9 @@
+import asyncio
+
 from ddgs import DDGS
 
 
-def search(query: str, max_results: int = 10) -> list[dict]:
-    """Search the web using DuckDuckGo."""
+def _search_sync(query: str, max_results: int) -> list[dict]:
     max_results = min(max_results, 30)
     results = []
     with DDGS() as ddgs:
@@ -13,3 +14,8 @@ def search(query: str, max_results: int = 10) -> list[dict]:
                 "description": result.get("body", ""),
             })
     return results
+
+
+async def search(query: str, max_results: int = 10) -> list[dict]:
+    """Search the web using DuckDuckGo."""
+    return await asyncio.to_thread(_search_sync, query, max_results)

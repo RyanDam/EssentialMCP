@@ -36,7 +36,7 @@ def get_mcp_server() -> FastMCP:
             query: The search query string.
             max_results: Maximum number of results to return (default 10, max 30).
         """
-        return web_search.search(query, max_results=max_results)
+        return await web_search.search(query, max_results=max_results)
 
     @mcp.tool()
     async def web_fetch_tool(url: str, max_length: int = -1) -> dict:
