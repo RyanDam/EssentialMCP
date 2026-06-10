@@ -1,12 +1,19 @@
 import calendar
+import os
 from datetime import datetime
-from zoneinfo import ZoneInfo
+
+
+def _get_system_tz() -> str:
+    try:
+        return os.readlink("/etc/localtime").split("/")[-1]
+    except (OSError, AttributeError):
+        return os.environ.get("TZ", "UTC")
 
 
 def get_current_time() -> str:
-    """Return current datetime as an unambiguous human-readable string with locale, timezone, and a calendar for the current month."""
-    tz = ZoneInfo("Asia/Jakarta")
-    now = datetime.now(tz)
+    """Return current datetime as an unambiguous human-readable string with timezone and a calendar for the current month."""
+    now = datetime.now().astimezone()
+    tz_iana = _get_system_tz()
     weekday = now.strftime("%A")
     month = now.strftime("%B")
     day = now.day
@@ -36,7 +43,6 @@ def get_current_time() -> str:
     return (
         f"The current date and time is {weekday}, {month} {day}, {year} "
         f"at {hour:02d}:{minute:02d}:{second:02d} "
-        f"({tz_name}, UTC{tz_offset}). "
-        f"Locale: C.UTF-8 (English, United States).\n\n"
+        f"({tz_iana}, {tz_name}, UTC{tz_offset}).\n\n"
         f"{cal_block}"
     )
