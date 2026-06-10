@@ -6,7 +6,7 @@ from starlette.responses import JSONResponse
 
 from mcp.server.fastmcp import FastMCP
 
-from src.tools import web_fetch, web_search, research
+from src.tools import web_fetch, web_search, research, current_time
 
 
 def get_mcp_server() -> FastMCP:
@@ -69,6 +69,15 @@ def get_mcp_server() -> FastMCP:
             max_papers=max_papers,
             max_chunks=max_chunks,
         )
+
+    @mcp.tool()
+    async def current_datetime() -> str:
+        """Return the current date and time in an unambiguous human-readable format, including timezone and locale information.
+
+        The result is phrased to prevent any misunderstanding about the exact moment,
+        with explicit timezone name, UTC offset, and locale setting.
+        """
+        return current_time.get_current_time()
 
     @mcp.prompt()
     def deep_research(query: str) -> list[dict]:
