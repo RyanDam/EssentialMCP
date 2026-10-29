@@ -13,7 +13,7 @@ Entrypoint: `src/server.py:main`. The `web-mcp` console script is equivalent.
 - No test suite exists.
 
 ## Architecture
-- **`src/server.py`** — FastMCP server; registers all tools and the `deep_research` prompt.
+- **`src/server.py`** — MCP server (`MCPServer`, mcp v2); registers all tools and the `deep_research` prompt. Builds the Starlette app for the active transport, adds CORS, and serves via uvicorn (v2's `run()` can't take custom middleware).
 - **`src/tools/web_search.py`** — DuckDuckGo search via `ddgs`. Sync call wrapped in `asyncio.to_thread`.
 - **`src/tools/web_fetch.py`** — HTTP fetch + HTML→markdown. Cleans non-content tags, extracts main body.
 - **`src/tools/research.py`** — ArXiv research: DDG `site:arxiv.org` search → fetch ArXiv HTML → chunk → BM25 rank. Downloads NLTK `punkt_tab` and `stopwords` corpora on first import.

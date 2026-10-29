@@ -1,28 +1,18 @@
 import os
 
+import uvicorn
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 from src.tools import web_fetch, web_search, research, current_time
 
 
-def get_mcp_server() -> FastMCP:
+def get_mcp_server() -> MCPServer:
     """Create and configure the MCP server with all tools."""
-    mcp = FastMCP(
-        "WebTools",
-        host=os.getenv("HOST", "0.0.0.0"),
-        port=int(os.getenv("PORT", "8642")),
-    )
-    for app in (mcp.sse_app(), mcp.streamable_http_app()):
-        app.add_middleware(
-            CORSMiddleware,
-            allow_origins=["*"],
-            allow_methods=["*"],
-            allow_headers=["*"],
-        )
+    mcp = MCPServer("WebTools")
 
     @mcp.custom_route("/", methods=["GET"])
     async def health_check(request: Request) -> JSONResponse:
@@ -128,7 +118,24 @@ def get_mcp_server() -> FastMCP:
 def main():
     mcp = get_mcp_server()
     transport = os.getenv("TRANSPORT", "sse")
-    mcp.run(transport=transport)
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", "8642"))
+
+    # v2's run() builds its own app internally, so Starlette middleware such as
+    # CORS can no longer be attached to a separately-obtained app. Build the app
+    # for the requested transport, add CORS, and serve it with uvicorn directly.
+    app = (
+        mcp.streamable_http_app(host=host)
+        if transport == "streamable-http"
+        else mcp.sse_app(host=host)
+    )
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    uvicorn.run(app, host=host, port=port)
 
 
 if __name__ == "__main__":
